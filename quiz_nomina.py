@@ -2,15 +2,6 @@
 # Quiz Semana 3 - Fundamentos de programacion (Pilares de POO)
 # Tema: nomina de una empresa leida desde un EXCEL. Aplica los 3 pilares:
 # Encapsulamiento, Herencia y Polimorfismo (lo visto en la Semana 3).
-#
-# NUEVO en este quiz:
-#   * Los datos vienen de un Excel (empleados.xlsx) con VARIAS columnas.
-#   * La LECTURA del Excel YA ESTA LISTA y es robusta (no la tienes que tocar).
-#   * Tu trabajo: completar los "# TODO" de las CLASES y crear TU PROPIA funcion.
-#
-# Antes de ejecutar, instala las librerias (una sola vez):
-#     pip install -r requirements.txt
-# Para ejecutar:  python quiz_nomina.py
 
 import pandas as pd
 
@@ -22,58 +13,55 @@ class EmpleadoBase:
     def __init__(self, nombre, salario_base, ciudad):
         self.nombre = nombre
         self.ciudad = ciudad
-        # TODO: guarda el salario usando el SETTER -> self.salario_base = salario_base
-        pass
+        # Se guarda el salario usando el SETTER
+        self.salario_base = salario_base
 
     # GETTER: leer el salario de forma segura
     @property
     def salario_base(self):
-        # TODO: devuelve el atributo privado self._salario_base
-        return 0
+        return self._salario_base
 
     # SETTER: valida ANTES de guardar
     @salario_base.setter
     def salario_base(self, nuevo_salario):
-        # TODO: si int(nuevo_salario) < 0  ->  raise ValueError("El salario no puede ser negativo.")
-        #       si es valido, guardalo:  self._salario_base = int(nuevo_salario)
-        pass
+        if int(nuevo_salario) < 0:
+            raise ValueError("El salario no puede ser negativo.")
+        self._salario_base = int(nuevo_salario)
 
     # Metodo comun que CADA HIJA sobreescribe (POLIMORFISMO)
     def calcular_pago(self):
         raise NotImplementedError("Cada tipo de empleado calcula su pago.")
 
     def obtener_informacion(self):
-        # TODO: devuelve un texto como:  "Ana | EmpleadoPlanta | Medellin | base $3000000"
-        #       Pista: self.nombre, type(self).__name__, self.ciudad, self.salario_base
-        return ""
+        # Devuelve el texto en el formato requerido
+        return f"{self.nombre} | {type(self).__name__} | {self.ciudad} | base ${self.salario_base}"
 
 
 # 2) CLASES HIJAS (HERENCIA)
 class EmpleadoPlanta(EmpleadoBase):
     def calcular_pago(self):
-        # TODO (POLIMORFISMO): el empleado de planta recibe su salario + 30% de prestaciones
-        return 0
+        # POLIMORFISMO: el empleado de planta recibe su salario + 30% de prestaciones
+        return self.salario_base * 1.30
 
 
 class EmpleadoContratista(EmpleadoBase):
     def calcular_pago(self):
-        # TODO (POLIMORFISMO): el contratista recibe solo su salario base (sin prestaciones)
-        return 0
+        # POLIMORFISMO: el contratista recibe solo su salario base (sin prestaciones)
+        return self.salario_base
 
 
 # 3) Crear el objeto correcto segun el TIPO
 def crear_empleado(nombre, tipo, salario_base, ciudad):
-    # TODO: si tipo == "PLANTA"       -> return EmpleadoPlanta(nombre, salario_base, ciudad)
-    #       si tipo == "CONTRATISTA"  -> return EmpleadoContratista(nombre, salario_base, ciudad)
-    #       si no                     -> raise ValueError(f"tipo desconocido '{tipo}'")
-    pass
+    if tipo == "PLANTA":
+        return EmpleadoPlanta(nombre, salario_base, ciudad)
+    elif tipo == "CONTRATISTA":
+        return EmpleadoContratista(nombre, salario_base, ciudad)
+    else:
+        raise ValueError(f"tipo desconocido '{tipo}'")
 
 
 # =====================================================================
-# 4) LECTURA DEL EXCEL  --  ¡YA ESTA LISTA!  (no necesitas modificarla)
-#    Es ROBUSTA: usa solo las columnas que necesita (aunque el Excel tenga
-#    columnas de mas), ignora filas incompletas y salta las invalidas
-#    (por ejemplo un salario negativo) sin detener el programa.
+# 4) LECTURA DEL EXCEL  --  ¡YA ESTA LISTA!
 # =====================================================================
 def leer_empleados_excel(nombre_archivo):
     """Lee empleados desde un Excel y devuelve una lista de objetos Empleado."""
@@ -104,7 +92,7 @@ def leer_empleados_excel(nombre_archivo):
 
         try:
             empleado = crear_empleado(nombre, tipo, salario, ciudad)
-            if empleado is not None:  # (por si aun no completas crear_empleado)
+            if empleado is not None:
                 empleados.append(empleado)
         except ValueError as error:
             print(f"  [Aviso] Se ignoro {nombre}: {error}")
@@ -114,18 +102,16 @@ def leer_empleados_excel(nombre_archivo):
 
 # =====================================================================
 # 5) RETO EXTRA: ¡CREA TU PROPIA FUNCION!
-#    Inventa una funcion util que trabaje con la lista de empleados.
-#    Elige UNA de estas ideas (o propon la tuya) y programala aqui abajo:
-
-#       * salario_promedio(empleados): promedio de salario_base
-#       * empleados_por_ciudad(empleados, ciudad): cuantos hay en esa ciudad
-#       * empleado_mejor_pagado(empleados): el de mayor calcular_pago()
-
-#    Documentala con un docstring y luego llamala dentro de ejecutar_quiz().
 # =====================================================================
 def salario_promedio(empleados):
-    # TODO: escribe aqui tu propia logica
-    pass
+    """
+    Calcula y devuelve el promedio del salario base de la nomina.
+    Si la lista de empleados esta vacia, devuelve 0 para evitar errores.
+    """
+    if not empleados:
+        return 0
+    total_salarios = sum(empleado.salario_base for empleado in empleados)
+    return total_salarios / len(empleados)
 
 
 # 6) Funcion principal
@@ -137,9 +123,10 @@ def ejecutar_quiz():
         # POLIMORFISMO: la misma llamada, distinto resultado segun el tipo
         print(empleado.obtener_informacion(), "-> pago:", empleado.calcular_pago())
 
-    # TODO (reto): descomenta y adapta la siguiente linea para usar TU funcion
+    # Llamado a la funcion del reto extra
     print("\nSalario promedio:", salario_promedio(empleados))
 
 
 # Iniciar el programa
-ejecutar_quiz()
+if __name__ == "__main__":
+    ejecutar_quiz()
